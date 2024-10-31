@@ -26,9 +26,15 @@ Compatibility
 Tested on osx 10.15 + of_v0.12.0 using either Qt-creator, Xcode or makefiles.  
 Windows and Linux versions need some effort to get it running.
 
+Related
+-------
+- [ofxSuperCollider](http://github.com/genekogan/ofxSuperCollider) : openframeworks addon for controlling SuperCollider via OSC.
+- [ofxSuperColliderServer](https://github.com/satoruhiga/ofxSuperColliderServer) : Run a server directly within openframeworks.
+
 Licenses
 --------
 Made by [Daan de Lange](https://daandelange.com/) with the help of [José Miguel Fernandez](https://github.com/Josemiguelfernandez).
 
-- ofxSCLang : [MIT License](./LICENSE.md)
-- supercollider : [MIT License](https://github.com/supercollider/supercollider/blob/develop/COPYING), the parser engine.
+- ofxSCLang : [MIT License](./LICENSE.md).
+- supercollider : [MIT License](https://github.com/supercollider/supercollider/blob/develop/COPYING).
+
