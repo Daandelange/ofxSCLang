@@ -9,13 +9,15 @@ git submodule update ../libs_submodules/supercollider
 echo "Configuring libSCLang..."
 mkdir -p ./supercollider/build
 cd ./supercollider/build
-cmake -G "Unix Makefiles" -D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++ -DSC_IDE=OFF -DSC_QT=OFF -DNATIVE=OFF -DINSTALL_HELP=OFF -DENABLE_TESTSUITE=OFF -DNO_X11=ON -DSCLANG_SERVER=OFF -DNOVA_SIMD=OFF -DLIBSCSYNTH=OFF -DSC_VIM=OFF -DSYSTEM_YAMLCPP=OFF -DFORTIFY=ON ..
+# cmake -G "Unix Makefiles" -D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++ -DSC_IDE=OFF -DSC_QT=OFF -DNATIVE=OFF -DINSTALL_HELP=OFF -DENABLE_TESTSUITE=OFF -DNO_X11=ON -DSCLANG_SERVER=OFF -DNOVA_SIMD=OFF -DLIBSCSYNTH=OFF -DSC_VIM=OFF -DSYSTEM_YAMLCPP=OFF -DFORTIFY=ON ..
+cmake -G "Unix Makefiles" -D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++ -DSC_IDE=OFF -DSC_QT=OFF -DNATIVE=OFF -DINSTALL_HELP=OFF -DENABLE_TESTSUITE=OFF -DNO_X11=ON -DSCLANG_SERVER=OFF -DNOVA_SIMD=OFF -DLIBSCSYNTH=OFF -DSC_VIM=OFF -DSYSTEM_YAMLCPP=OFF -DFORTIFY=ON -DHID_INSTALL_HUT=OFF -DFINAL_BUILD=ON -DBUILD_TESTING=OFF -DSC_ABLETON_LINK=OFF -DNO_LIBSNDFILE=ON ..
 
 echo "Building libSCLang..."
 cmake --build . --target libsclang  --config Release
 cd ../../
 
 echo "Copying SCLang..."
+rm -r ../libs/supercollider
 mkdir -p ../libs/supercollider/include
 mkdir -p ../libs/supercollider/src
 mkdir -p ../libs/supercollider/lib/osx
