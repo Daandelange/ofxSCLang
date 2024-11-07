@@ -4,6 +4,8 @@
 #include <iostream> // cout
 #include "ofLog.h" // ofBaseLoggerChannel
 #include <algorithm> // replace
+#include <regex>
+#include "ofEventUtils.h" // ofNotifyEvent
 
 ofxScLangClient_impl::ofxScLangClient_impl(const char* _name) : SC_LanguageClient(_name){
 
@@ -57,14 +59,35 @@ void ofxScLangClient_impl::postError(const char* str, size_t len){
 //     only called from the main language thread.
 // Note: Used to sync threads with incoming data
 void ofxScLangClient_impl::flush(){
-    static std::string str;
-    while(hotErrors.tryReceive(str, 0)){
+    static std::string receivedStr;
+    while(hotErrors.tryReceive(receivedStr, 0)){
         //std::cout << "Received from thread=" << str << std::endl;
-        errors.push_back(str);
+        auto& err = errors.emplace_back(receivedStr);
+        ofNotifyEvent(ofxScLangClient_impl::onNewError, err);
     }
-    while(hotMessages.tryReceive(str, 0)){
+    while(hotMessages.tryReceive(receivedStr, 0)){
         //std::cout << "Received from thread=" << str << std::endl;
-        messages.push_back(str);
+        // Check if message contains an ID
+        static std::regex findIdRegex("^-?>? ?\\( ?'name' ?: ?(.+), ?'obj' ?: ?(.+) ?\\) ?\n?$", std::regex_constants::ECMAScript | std::regex_constants::icase);
+        //receivedStr = "-> ('name': mdDemo, 'obj': ('specs': ('cutoff': [200, 16000, exp, 0, 1000], 'amp': [0, 1, db, 0, 0.5], 'freq': [50, 16000, exp, 0, 7000])))"; // tmp!
+        auto words_begin = std::sregex_iterator(receivedStr.begin(), receivedStr.end(), findIdRegex);
+        auto words_end = std::sregex_iterator();
+
+        // None found ?
+        if(words_begin == words_end){
+            // Transfer message intact
+            auto& msg = messages.emplace_back(receivedStr);
+            ofNotifyEvent(ofxScLangClient_impl::onNewMessage, msg);
+        }
+        else {
+            for (std::sregex_iterator i = words_begin; i != words_end; ++i){
+                std::smatch match = *i;
+
+                // Transfer message
+                auto& msg = messages.emplace_back(match.str(2), match.str(1));
+                ofNotifyEvent(ofxScLangClient_impl::onNewMessage, msg);
+            }
+        }
     }
 
     //std::cout << "flushed client!!" << std::endl;
@@ -79,7 +102,7 @@ void ofxScLangClient_impl::clearLogs() {
 	errors.clear();
 }
 
-const std::vector<std::string>& ofxScLangClient_impl::getMessages() {
+const std::vector<ofxScLangClient_impl::messageWithId>& ofxScLangClient_impl::getMessages() {
 	flush();
 	return messages;
 }
@@ -202,15 +225,19 @@ void ofxScLangClient::interpretBuffer(const ofBuffer& buf, bool printResult){
     printResult ? scLangClient->interpretPrintCmdLine() : scLangClient->interpretCmdLine();
 }
 
-// Reads a file and interprets it
-void ofxScLangClient::interpretFile(const char* path, bool printResult){
-    std::string fileName = ofToDataPath(path, true).c_str();
+// Reads a file and interprets it. cmdId injects an extra ID which lets you retrieve the result corresponding to a given command
+void ofxScLangClient::interpretFile(const char* path, bool toDataPath, bool printResult, const char* cmdId){
+    if(!isSetup()) return
+    ;
+    std::string fileName = toDataPath?ofToDataPath(path, true):path;
+
     // Prefer to use the original code
-    if(!printResult){
+    if(!printResult && cmdId==nullptr){
         scLangClient->executeFile(fileName.c_str());
     }
     // We have to replicate the above function changing the output options.
     else {
+        // Original behaviour
         std::string escaped_file_name(fileName);
         int i = 0;
         while (i < escaped_file_name.size()) {
@@ -219,8 +246,24 @@ void ofxScLangClient::interpretFile(const char* path, bool printResult){
             ++i;
         }
 
-        scLangClient->setCmdLinef("thisProcess.interpreter.executeFile(\"%s\")", escaped_file_name.c_str());
-        scLangClient->runLibrary("interpretPrintCmdLine"); // this is the changed line : arg to char equivalent
+        // Original behaviour
+        if(cmdId==nullptr){
+            scLangClient->setCmdLinef("thisProcess.interpreter.executeFile(\"%s\")", escaped_file_name.c_str());
+        }
+        // Modified behaviour
+        else {
+            std::string escaped_id(cmdId);
+            #if false
+            int i = 0;
+            while (i < escaped_id.size()) {
+                if (escaped_id[i] == '"')
+                    escaped_id.insert(++i, 1, '\\');
+                ++i;
+            }
+            #endif
+            scLangClient->setCmdLinef("(name:\"%s\", obj: thisProcess.interpreter.executeFile(\"%s\"))", escaped_id.c_str(), escaped_file_name.c_str());
+        }
+        scLangClient->runLibrary(printResult?"interpretPrintCmdLine":"interpretCmdLine"); // this is the changed line : arg to char equivalent
     }
 }
 
@@ -251,3 +294,9 @@ void ofxScLangClient::clearLogsToConsole(){
     scLangClient->clearLogs();
 }
 
+std::ostream& operator<< (
+  std::ostream& stream,
+  const ofxScLangClient_impl::messageWithId& msg
+) {
+    return stream << "[`" << (msg.hasId()?msg.id:"*") << "`]=`" << msg.message << "`";
+}

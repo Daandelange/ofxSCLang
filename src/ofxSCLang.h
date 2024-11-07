@@ -5,6 +5,7 @@
 
 #include "ofFileUtils.h" // ofBuffer, ofToDataPath
 #include "ofThreadChannel.h"
+#include "ofEvent.h"
 #include <string> // strlen, string
 #include <vector>
 #include <algorithm> // replace
@@ -33,13 +34,27 @@ public:
 	// Clears all logs. Useful for consuming data.
 	void clearLogs();
 
-	const std::vector<std::string>& getMessages();
+	struct messageWithId {
+		std::string id;
+		std::string message;
+
+		messageWithId(std::string _message, std::string _id="") : message(_message), id(_id) {}
+		bool hasId() const {
+			return id.length()>0;
+		}
+	};
+	const std::vector<messageWithId>& getMessages();
 	const std::vector<std::string>& getErrors();
 	bool hasErrors() const;
 
 	bool bIgnoreMessagesNow = false;
+
+	// message_error event notifiers
+	ofEvent<messageWithId&> onNewMessage;
+	ofEvent<std::string&> onNewError;
+
 private:
-    std::vector<std::string> messages;
+    std::vector<messageWithId> messages;
     std::vector<std::string> errors;
 
 
@@ -47,6 +62,14 @@ private:
     ofThreadChannel<std::string> hotErrors;
 };
 
+// Be nice with cout
+std::ostream& operator<< (
+  std::ostream& stream,
+  const ofxScLangClient_impl::messageWithId& msg
+);
+
+// This class makes the _impl class more Openframeworks-friendly
+// The underlying object is still accessible like `ofxScLangClient->scLangClient->something()`
 class ofxScLangClient {
     public:
         ofxScLangClient_impl* scLangClient = nullptr;
@@ -83,7 +106,7 @@ class ofxScLangClient {
         void interpretBuffer(const ofBuffer& buf, bool printResult=false);
 
         // Reads a file and interprets it
-        void interpretFile(const char* path, bool printResult=false);
+        void interpretFile(const char* path, bool toDataPath=true, bool printResult=false, const char* cmdId=nullptr);
 
         // Prints logs to console and clears them
         void clearLogsToConsole();

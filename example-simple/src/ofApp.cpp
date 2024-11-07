@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    // Print setup messages to console
+    // Print setup messages to console and clear (setup) messages
     ofSetLogLevel(OF_LOG_NOTICE);
     scLangClient.clearLogsToConsole();
 
@@ -26,7 +26,11 @@ void ofApp::setup(){
     scLangClient.interpretBuffer(buff, true); // <-- Here we ask to print the result as out file doesn't contain any print statement
 
     // Alternative : interpret a file
-    //scLangClient.interpretFile("mdDemo.txarcmeta", true);
+    scLangClient.interpretFile("mdDemo.txarcmeta", true, true, "myCmdID");
+
+    // You can also load a synthdef meta file
+    // Note: Sclang doesn't support ~ alias so you have to fill your username and filename
+    //scLangClient.interpretFile("/Users/USERNAME/Library/Application Support/SuperCollider/synthdefs/FILENAME.txarcmeta", false, true, "txarcmeta");
 
     // Flush to wait for results
     scLangClient.scLangClient->flush();
@@ -73,7 +77,10 @@ void ofApp::draw(){
                 ofDrawBitmapStringHighlight("[None]", textPos); textPos+=textIndent;
             }
             else for(;mBegin!=mEnd;mBegin++){
-                ofDrawBitmapStringHighlight(*mBegin, textPos); textPos+=textIndent;
+                static const std::string emptyIdStr = "*";
+                static const std::string separator = std::string(" :: ");
+                const std::string& id = mBegin->hasId()?mBegin->id:emptyIdStr;
+                ofDrawBitmapStringHighlight(id + separator + mBegin->message, textPos); textPos+=textIndent;
             }
             textPos.x -= 10;
 
