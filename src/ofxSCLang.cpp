@@ -154,6 +154,7 @@ bool ofxScLangClient::isReady() const {
 }
 
 bool ofxScLangClient::hasErrors() const {
+    if(!isSetup()) return false;
     return scLangClient->hasErrors();
 }
 
@@ -204,22 +205,26 @@ const char* ofxScLangClient::getName() const {
 
 // Interprets a char array
 void ofxScLangClient::interpretChars(const char* str, std::size_t len, bool printResult){
+    if(!isSetup()) return;
     scLangClient->setCmdLine(str, len);
     printResult ? scLangClient->interpretPrintCmdLine() : scLangClient->interpretCmdLine();
 }
 
 // Shorthand
 void ofxScLangClient::interpretChars(const char* str, bool printResult){
+    if(!isSetup()) return;
     interpretChars(str, std::strlen(str), printResult);
 }
 
 // String shorthand
 void ofxScLangClient::interpretChars(const std::string& str, bool printResult){
+    if(!isSetup()) return;
     interpretChars(&str[0], str.length(), printResult);
 }
 
 // Interprets a char buffer
 void ofxScLangClient::interpretBuffer(const ofBuffer& buf, bool printResult){
+    if(!isSetup()) return;
     const char* data = buf.getData();
     scLangClient->setCmdLine(data, std::strlen(data));
     printResult ? scLangClient->interpretPrintCmdLine() : scLangClient->interpretCmdLine();
@@ -269,7 +274,7 @@ void ofxScLangClient::interpretFile(const char* path, bool toDataPath, bool prin
 
 // Prints logs to console and clears them
 void ofxScLangClient::clearLogsToConsole(){
-    if(!scLangClient) return;
+    if(!isSetup()) return;
 
     auto& errors = scLangClient->getErrors();
     if(errors.size()>0){
