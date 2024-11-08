@@ -184,6 +184,10 @@ bool ofxScLangClient::setup(const char* title){
     scLangClient->initRuntime(opts);
     scLangClient->compileLibrary(false);
 
+    if(!scLangClient->isLibraryCompiled()){
+        ofLogWarning("ofxScLangClient::setup()") << "Couldn't compile the library ! Did you forget to copy the `SCClassLibrary` folder ?";
+    }
+
     // Reset ignores
     // Note: Flush ensures all messages are delivered from threads
     scLangClient->flush();
