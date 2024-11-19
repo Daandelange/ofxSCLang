@@ -68,7 +68,7 @@ void ofxScLangClient_impl::flush(){
     while(hotMessages.tryReceive(receivedStr, 0)){
         //std::cout << "Received from thread=" << str << std::endl;
         // Check if message contains an ID
-        static std::regex findIdRegex("^-?>? ?\\( ?'name' ?: ?(.+), ?'obj' ?: ?(.+) ?\\) ?\n?$", std::regex_constants::ECMAScript | std::regex_constants::icase);
+        static std::regex findIdRegex("^-?>? ?\\( ?'name' ?: ?(.+), ?'obj' ?: ?(.+) ?(\\)|...etc...){1} ?\n?$", std::regex_constants::ECMAScript | std::regex_constants::icase);
         //receivedStr = "-> ('name': mdDemo, 'obj': ('specs': ('cutoff': [200, 16000, exp, 0, 1000], 'amp': [0, 1, db, 0, 0.5], 'freq': [50, 16000, exp, 0, 7000])))"; // tmp!
         auto words_begin = std::sregex_iterator(receivedStr.begin(), receivedStr.end(), findIdRegex);
         auto words_end = std::sregex_iterator();
@@ -83,8 +83,15 @@ void ofxScLangClient_impl::flush(){
             for (std::sregex_iterator i = words_begin; i != words_end; ++i){
                 std::smatch match = *i;
 
-                // Transfer message
+                // Store result
                 auto& msg = messages.emplace_back(match.str(2), match.str(1));
+
+                // Add back missing ETC to explicitly mark it uncomplete (as received)
+                if(match.str(3).compare("...etc...")==0){
+                    msg.message.append("...etc...");
+                }
+
+                // Transfer message
                 ofNotifyEvent(ofxScLangClient_impl::onNewMessage, msg);
             }
         }
@@ -271,6 +278,7 @@ void ofxScLangClient::interpretFile(const char* path, bool toDataPath, bool prin
             }
             #endif
             scLangClient->setCmdLinef("(name:\"%s\", obj: thisProcess.interpreter.executeFile(\"%s\"))", escaped_id.c_str(), escaped_file_name.c_str());
+            //printf("Running cmd = (name:\"%s\", obj: thisProcess.interpreter.executeFile(\"%s\"))\n", escaped_id.c_str(), escaped_file_name.c_str());
         }
         scLangClient->runLibrary(printResult?"interpretPrintCmdLine":"interpretCmdLine"); // this is the changed line : arg to char equivalent
     }

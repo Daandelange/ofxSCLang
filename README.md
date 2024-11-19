@@ -26,6 +26,11 @@ Compatibility
 Tested on osx 10.15 + of_v0.12.0 using either Qt-creator, Xcode or makefiles.  
 Windows and Linux versions need some effort to get it running.
 
+Known Issues
+------------
+- SClang's objects have a build-in limitation on stringifying objects for returning the post message.  
+  This can be fixed by editing `SCClassLibrary/Common/Core/Object.sc`: Replace `asString { arg limit = 512;` by `asString { arg limit = 2048;`.
+
 Related
 -------
 - [ofxSuperCollider](http://github.com/genekogan/ofxSuperCollider) : openframeworks addon for controlling SuperCollider via OSC.
