@@ -12,6 +12,9 @@
 
 // Of client to capture the output
 class ofxScLangClient_impl : public SC_LanguageClient {
+
+// Todo: Unify errors in a specific universe ?
+
 public:
     ofxScLangClient_impl()=delete;
     //CustomClient(const char* _name) : SC_TerminalClient(_name){
@@ -37,8 +40,9 @@ public:
 	struct messageWithId {
 		std::string id;
 		std::string message;
+		unsigned int universe; // A universe (useful for routing messages)
 
-		messageWithId(std::string _message, std::string _id="") : message(_message), id(_id) {}
+		messageWithId(std::string _message, std::string _id="", unsigned int _universe=0) : message(_message), id(_id), universe(_universe) {}
 		bool hasId() const {
 			return id.length()>0;
 		}
@@ -94,21 +98,41 @@ class ofxScLangClient {
         const char* getName() const;
 
         // Interprets a char array
-        void interpretChars(const char* str, std::size_t len, bool printResult=false);
+        void interpretChars(const char* str, std::size_t len, bool printResult=false, const char* cmdId=nullptr, unsigned int universe=0u);
 
         // Shorthand
-        void interpretChars(const char* str, bool printResult=false);
+        void interpretChars(const char* str, bool printResult=false, const char* cmdId=nullptr, unsigned int universe=0u);
 
         // String shorthand
-        void interpretChars(const std::string& str, bool printResult=false);
+        void interpretChars(const std::string& str, bool printResult=false, const char* cmdId=nullptr, unsigned int universe=0u);
 
         // Interprets a char buffer
-        void interpretBuffer(const ofBuffer& buf, bool printResult=false);
+        void interpretBuffer(const ofBuffer& buf, bool printResult=false, const char* cmdId=nullptr, unsigned int universe=0u);
 
         // Reads a file and interprets it
-        void interpretFile(const char* path, bool toDataPath=true, bool printResult=false, const char* cmdId=nullptr);
+        void interpretFile(const char* path, bool toDataPath=true, bool printResult=false, const char* cmdId=nullptr, unsigned int universe=0u);
 
         // Prints logs to console and clears them
         void clearLogsToConsole();
 
+        void setCmdLineWithMsgID(const char* cmd, std::size_t len, const char* cmdID=nullptr, unsigned int universe=0u);
+        // Todo: Implement functions below to have better state tracking ?
+        // // called after language runtime has been initialized
+        // virtual void onInitRuntime();
+        // // called after the library has been compiled
+        // virtual void onLibraryStartup();
+        // // called before the library is shut down
+        // virtual void onLibraryShutdown();
+        // // called after the interpreter has been started
+        // virtual void onInterpStartup();
+
+        // Helper for retrieving the SCLang directory
+        std::string getUserSynthdefLibFolder(const char* extraPath = nullptr) const;
+        static std::string getSCUserSynthdefLibFolder(const char* extraPath = nullptr);
+
+        const std::string& getUserAppSupportDir() const;
+        const std::string& getResourceDir() const;
+    protected:
+        std::string userAppSupportDir;
+        std::string resourceDir;
 };

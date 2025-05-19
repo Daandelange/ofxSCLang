@@ -14,9 +14,7 @@ Project{
         cpp.cxxLanguageVersion: 'c++17'
 
         files: [
-            'src/main.cpp',
-            'src/ofApp.cpp',
-            'src/ofApp.h',
+            'src/*',
         ]
 
         of.addons: [

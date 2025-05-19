@@ -32,7 +32,7 @@ cp ./supercollider/build/external_libraries/hidapi/hidapi_parser/libhidapi_parse
 cp ./supercollider/build/external_libraries/libboost_regex_lib.a ../libs/supercollider/lib/osx/libboost_regex_lib.a
 cp ./supercollider/build/external_libraries/libboost_thread_lib.a ../libs/supercollider/lib/osx/libboost_thread_lib.a
 cp ./supercollider/build/external_libraries/libyaml.a ../libs/supercollider/lib/osx/libyaml.a
-cp ./supercollider/platform/mac/lib/scUBlibsndfile.a ../libs/supercollider/lib/osx/scUBlibsndfile.a
+#cp ./supercollider/platform/mac/lib/scUBlibsndfile.a ../libs/supercollider/lib/osx/scUBlibsndfile.a
 cp ./supercollider/COPYING ../libs/supercollider/COPYING
 
 echo "Copying SCClassLibrary..."
@@ -41,3 +41,5 @@ echo "Copying SCClassLibrary..."
 mkdir -p ../data
 cp -R ./supercollider/SCClassLibrary ../data/
 
+# Todo: re-enable libsndfile ?
+# see https://github.com/libsndfile/libsndfile/issues/678#issuecomment-749165811
