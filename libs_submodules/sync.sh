@@ -14,14 +14,17 @@ cmake -G "Unix Makefiles" -D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPIL
 
 echo "Building libSCLang..."
 cmake --build . --target libsclang  --config Release
-cd ../../
 
-echo "Copying SCLang..."
-rm -r ../libs/supercollider
+echo "Removing old SCLang folder... (if existing)"
+cd ../../
+rm -r ../libs/supercollider || true
+
+echo "Preparing SCLang target folder..."
 mkdir -p ../libs/supercollider/include
 mkdir -p ../libs/supercollider/src
 mkdir -p ../libs/supercollider/lib/osx
 
+echo "Copying SCLang files..."
 #cp -R ./supercollider/src ../libs/supercollider/
 cp -R ./supercollider/include/common ../libs/supercollider/include/
 cp -R ./supercollider/include/lang ../libs/supercollider/include/

@@ -371,6 +371,7 @@ void ofxScLangClient::setCmdLineWithMsgID(const char* cmd, std::size_t len, cons
     // Set with ID ?
     else {
         // Set wrapped command
+        // Todo: use same syntax as interpretExecuteFile to more error-friendly (ensure getting returned object).
         scLangClient->setCmdLinef("(name:\"%s\", u: %u, obj: %s)", cmdID, universe, cmd);
     }
 }
